@@ -36,9 +36,38 @@ using UnityEngine.XR;
 public class GrabItem : MonoBehaviour
 {
     public XRNode handType;
+    public GameObject objectInHand;
+    public GameObject CollidingObject;
+
+    private void OnTriggerEnter(Collider other) {
+        if (other.gameObject.GetComponent<Grabbable>()) {
+            Debug.Log("colliding");
+            CollidingObject = other.gameObject;
+        }
+    }
+
+    private void OnTriggerExit(Collider other) {
+        Debug.Log("exiting");
+        CollidingObject = null;
+    }
 
     void Update()
     {
-        // FILL IN
+    bool gripDown = false;
+    InputDevice hand = InputDevices.GetDeviceAtXRNode(handType);
+    hand.TryGetFeatureValue(CommonUsages.gripButton, out gripDown);
+
+    // 1.
+    if (gripDown && CollidingObject)
+    {
+        objectInHand = CollidingObject;
+        objectInHand.transform.SetParent(transform);
     }
+    
+    else if (!gripDown && objectInHand)
+    {
+        objectInHand.transform.SetParent(null);
+        objectInHand = null;
+    }
+}
 }

@@ -37,6 +37,6 @@ public class PlayerRigSetup : MonoBehaviour
 {
     void Start()
     {
-        bool success = XRDevice.SetTrackingSpaceType(TrackingSpaceType.RoomScale);
+        // FILL IN
     }
 }
