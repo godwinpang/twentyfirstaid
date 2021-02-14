@@ -47,7 +47,7 @@ public class GrabItem : MonoBehaviour
     }
 
     private void OnTriggerExit(Collider other) {
-        Debug.Log("exiting");
+        // Debug.Log("exiting");
         CollidingObject = null;
     }
 
