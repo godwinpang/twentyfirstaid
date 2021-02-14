@@ -1,13 +1,19 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.XR;
 
 public class LineRendererSettings : MonoBehaviour
 {
     [SerializeField] LineRenderer rend;
     Vector3[] points;
 
-    public LayerMask layerMask;
+    public GameObject panel;
+    public Image img;
+    public Button btn;
+
+    public XRNode handType;
 
     // Start is called before the first frame update
     void Start()
@@ -18,28 +24,65 @@ public class LineRendererSettings : MonoBehaviour
         points[1] = transform.position + new Vector3(0,0,20);
         rend.SetPositions(points);
         rend.enabled = true;
+        rend.startColor = Color.red;
+        rend.endColor = Color.red;
+
+        img = panel.GetComponent<Image>();
     }
 
-    void AlignLineRenderer(LineRenderer rend)
+    bool AlignLineRenderer(LineRenderer rend)
     {
         Ray ray;
         ray = new Ray(transform.position, transform.forward);
         RaycastHit hit;
 
-        if (Physics.Raycast(ray, out hit, layerMask))
+        bool didHit = false;
+
+        if (Physics.Raycast(ray, out hit))
         {
-            points[1] = transform.forward + new Vector3(0,0, hit.distance);
+            btn = hit.collider.gameObject.GetComponent<Button>();
+            didHit = true;
+
+            rend.startColor = Color.green;
+            rend.endColor = Color.green;
         }
         else
         {
-            points[1] = transform.forward + new Vector3(0,0,20);
+            rend.startColor = Color.red;
+            rend.endColor = Color.red;
         }
+
         rend.SetPositions(points);
+        rend.material.color = rend.startColor;
+        return didHit;
     }
 
     // Update is called once per frame
     void Update()
     {
-        AlignLineRenderer(rend);
+        bool gripDown = false;
+        InputDevice hand = InputDevices.GetDeviceAtXRNode(handType);
+        hand.TryGetFeatureValue(CommonUsages.triggerButton, out gripDown);
+
+        Debug.Log(gripDown);
+        if (AlignLineRenderer(rend) && gripDown) {
+            ChangeColor();
+        }
+    }
+
+    public void ChangeColor()
+    {
+        Debug.Log("hi");
+        if (btn != null) 
+        {
+            if (img.color == Color.red)
+            {
+                img.color = Color.green;
+            } 
+            else 
+            {
+                img.color = Color.red;
+            }
+        }
     }
 }

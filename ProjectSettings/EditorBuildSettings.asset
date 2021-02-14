@@ -8,6 +8,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/HomeScene.unity
     guid: 1a784a1bde7b6402180fac789554cfda
+  - enabled: 1
+    path: Assets/PatientScene.unity
+    guid: 7ff1cbc27b3f84cbc8a4ab43ee7216df
   m_configObjects:
     Unity.XR.Oculus.Settings: {fileID: 11400000, guid: bfa1182bd221b4ca89619141f66f1260,
       type: 2}
