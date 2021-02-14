@@ -27,6 +27,7 @@ public class animationStateController : MonoBehaviour
     public float slowDiePauseTime = 18.0f; 
     public float cprTime = 30.0f; 
     public float cprInstrTime = 20.0f;
+    public float cprDuration = 10.0f;
     public float volume=0.9f; // Clip volume
 
     public bool inChest = false;
@@ -35,14 +36,26 @@ public class animationStateController : MonoBehaviour
     public int numPresses = 0;
     public LayerMask chestLayerMask; // Set to everything
     public int framesInBetweenCPRPresses = 1;
-    public float MinPressTime = 0.5f;
-    public float MaxPressTime = 0.5f;
+    public float MinPressTime = 0.45f;
+    public float MaxPressTime = 0.55f;
     public int MaxPressScore = 100;
     // penalty = deviation amount / DeviationUnit * DeviationPenalty * MaxPressScore
     public float DeviationPenalty = 0.1f;
     public float DeviationUnit= 0.1f;
     public bool played_slow_die = false;
     public bool played_cpr_instr = false;
+    private bool patient_dead = false;
+
+    public Text pumpText;
+    public string PUMP = "PUMP";
+    public string NO_PUMP = "";
+
+    public float pumpTimer = 0.0f;
+    // we want pump every 0.6 seconds, so we should flip between pump and empty text 
+    // "PUMP" && pumpTimer > pumpT => ""
+    // "" && pumpTimer > letGo => "PUMP"
+    public float pumpThreshold = 0.4f;
+    public float letGoThreshold = 0.2f;
 
     // Start is called before the first frame update
     void Start()
@@ -54,7 +67,10 @@ public class animationStateController : MonoBehaviour
         audioSource.PlayOneShot(introductionClip, volume);
         ymcaTime = 23.0f;
         slowDiePauseTime = 18.0f;
+        MinPressTime = 0.45f;
+        MaxPressTime = 0.55f;
         framesInBetweenCPRPresses = 1;
+        pumpText.text = NO_PUMP;
     }
 
     // Update is called once per frame
@@ -105,7 +121,7 @@ public class animationStateController : MonoBehaviour
                 slowDiePauseTime -= Time.deltaTime;
                 return;
             } 
-            animator.speed = 0.1f;
+            animator.speed = 0.5f;
             return;
         }
         if (animator.GetCurrentAnimatorStateInfo(0).IsName("Mutant Slow Dying-2")) {
@@ -127,7 +143,11 @@ public class animationStateController : MonoBehaviour
                 cprInstrTime -= Time.deltaTime;
                 return;
             } 
-            
+            patient_dead = true;
+        }
+
+        if (!patient_dead) {
+            return; 
         }
 
         // If performing CPR
@@ -135,11 +155,24 @@ public class animationStateController : MonoBehaviour
         if (cprTime <= 0.0f)
         {
             // show stuff
-            canvas.SetActive(true);
             string avg_score = getAverageScore(totalScore, numPresses);
             score.text = "Score: " + avg_score;
             grade.text = "Grade: " + getGrade(int.Parse(avg_score));
             return;
+        }
+
+        Debug.Log("pumping");
+
+        pumpTimer += Time.deltaTime;
+        if (pumpText.text == PUMP && pumpTimer >= pumpThreshold)
+        {
+            pumpText.text = NO_PUMP;
+            pumpTimer = 0;
+        }
+        else if (pumpText.text == NO_PUMP && pumpTimer >= letGoThreshold)
+        {
+            pumpText.text = PUMP;
+            pumpTimer = 0;
         }
 
         Collider[] overlaps = Physics.OverlapSphere(rightHand.transform.position, 0.1f);
